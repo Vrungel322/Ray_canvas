@@ -12,13 +12,6 @@ class RayAndIntersectPoint {
   RayAndIntersectPoint(this.ray, this.intersectPoint);
 }
 
-class WallAndIntersectPoint {
-  final Wall wall;
-  final Vector2 intersectPoint;
-
-  WallAndIntersectPoint(this.wall, this.intersectPoint);
-}
-
 class WallAndDistanceBetweenIntersectPointAndRayStart
     extends Comparable<WallAndDistanceBetweenIntersectPointAndRayStart> {
   final Wall wall;
@@ -124,6 +117,7 @@ class Ray {
       return null;
   }
 
+  /// returns distance between ray star position and intersect point
   double calculateDirectDistanceToRayStart(Vector2 intersectPoint) {
     double length;
     if (intersectPoint == null) {
@@ -134,15 +128,15 @@ class Ray {
     return length;
   }
 
+  /// return firs wall that ray will intersect
   Wall firstIntersectedWall(List<Wall> walls) {
     Wall firsIntersectedWall;
     var wallsAndDistanceBetweenIntersectPointAndRayStart = walls.map((w) {
-      return WallAndIntersectPoint(w, intersect(w));
-    }).map((wp) {
-      double l = calculateDirectDistanceToRayStart(wp.intersectPoint);
-      return WallAndDistanceBetweenIntersectPointAndRayStart(wp.wall, l);
-    }).toList()
-      ..sort();
+      Vector2 intersectPoint = intersect(w);
+      double d = calculateDirectDistanceToRayStart(intersectPoint);
+      return WallAndDistanceBetweenIntersectPointAndRayStart(w, d);
+    }).toList();
+    wallsAndDistanceBetweenIntersectPointAndRayStart.sort();
     firsIntersectedWall = wallsAndDistanceBetweenIntersectPointAndRayStart.first.wall;
     return firsIntersectedWall;
   }
