@@ -2,6 +2,9 @@ import 'dart:math';
 
 import 'package:vector_math/vector_math.dart';
 
+const int WALLS_COUNT = 4;
+const double RAY_ANGLE_DELTA = 2;
+
 class RayAndIntersectPoint {
   final Ray ray;
   final Vector2 intersectPoint;
@@ -35,16 +38,16 @@ class WallAndDistanceBetweenIntersectPointAndRayStart
 }
 
 class DrawData {
+  DrawData._internal();
+
+  static final DrawData instance = DrawData._internal();
+
   List<Wall> walls = [];
   Particle particle;
 
-  void clearParticle() {
-    if (particle != null) particle.rays.clear();
-  }
-
   void generateWalls(double areaWidth, double areaHeight) {
     walls.clear();
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < WALLS_COUNT; i++) {
       Vector2 random1 = Vector2.random();
       Vector2 random2 = Vector2.random();
       walls.add(Wall(Vector2(areaWidth * random1.x, areaWidth * random1.y),
@@ -58,7 +61,7 @@ class Particle {
   List<Ray> rays = [];
 
   Particle(this.pos) {
-    for (double i = 0; i < 360; i += 2) {
+    for (double i = 0; i < 360; i += RAY_ANGLE_DELTA) {
       rays.add(Ray(Vector2(pos.x, pos.y), i));
     }
   }

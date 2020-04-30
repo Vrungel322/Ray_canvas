@@ -13,18 +13,12 @@ class CanvasWidget extends StatefulWidget {
 class _CanvasWidgetState extends State<CanvasWidget> {
   double userX = 0;
   double userY = 0;
-  DrawData drawData = DrawData();
+  DrawData drawData = DrawData.instance; // need to be crated only once
 
   @override
   Widget build(BuildContext context) {
-    double areaWidth = MediaQuery
-        .of(context)
-        .size
-        .width;
-    double areaHeight = MediaQuery
-        .of(context)
-        .size
-        .height;
+    double areaWidth = MediaQuery.of(context).size.width;
+    double areaHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       appBar: AppBar(
@@ -42,21 +36,19 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       ),
       body: Center(
           child: Listener(
-            onPointerMove: (PointerEvent details) {
-              setState(() {
-                userX = details.localPosition.dx;
-                userY = details.localPosition.dy;
-                drawData.clearParticle();
-                drawData.particle = Particle(math.Vector2(userX, userY));
-
-                if (drawData.walls.isEmpty) drawData.generateWalls(areaWidth, areaHeight);
-              });
-            },
-            child: CustomPaint(
-              size: Size(areaWidth, areaHeight),
-              painter: RayPainter(userX, userY, drawData),
-            ),
-          )),
+        onPointerMove: (PointerEvent details) {
+          setState(() {
+            userX = details.localPosition.dx;
+            userY = details.localPosition.dy;
+            drawData.particle = Particle(math.Vector2(userX, userY));
+            if (drawData.walls.isEmpty) drawData.generateWalls(areaWidth, areaHeight);
+          });
+        },
+        child: CustomPaint(
+          size: Size(areaWidth, areaHeight),
+          painter: RayPainter(userX, userY, drawData),
+        ),
+      )),
     );
   }
 }
@@ -101,8 +93,7 @@ class RayPainter extends CustomPainter {
       });
     }
 
-    canvas.drawCircle(Offset(userX,userY), 20, pointerPaint);
-
+    canvas.drawCircle(Offset(userX, userY), 20, pointerPaint);
   }
 
   @override
