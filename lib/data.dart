@@ -56,7 +56,7 @@ class Ray {
 
   Ray(this.pos, this.angle) {
     num rad = angle * pi / 180;
-    dir = Vector2(pos.x + pos.x * cos(rad) * 100, pos.y + pos.y * sin(rad) * 100); // just for make ray larger
+    dir = Vector2(cos(rad) * 10000, sin(rad) * 10000); // 10000 just for make ray larger
   }
 
   Vector2 intersect(Wall wall) {
