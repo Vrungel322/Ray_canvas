@@ -27,7 +27,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
             icon: Icon(Icons.refresh),
             onPressed: () {
               setState(() {
-                drawData.generateWalls(areaWidth, areaHeight);
+                drawData.generateWalls(areaWidth, areaHeight / 2);
               });
             },
           )
@@ -39,14 +39,17 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         onPointerMove: (PointerEvent details) {
           setState(() {
             userX = details.localPosition.dx;
-            userY = details.localPosition.dy;
+            if (details.localPosition.dy > 0 && details.localPosition.dy < areaHeight / 2)
+              userY = details.localPosition.dy;
+            else
+              userY = areaHeight / 2;
             drawData.particle = Particle(math.Vector2(userX, userY));
-            if (drawData.walls.isEmpty) drawData.generateWalls(areaWidth, areaHeight);
+            if (drawData.walls.isEmpty) drawData.generateWalls(areaWidth, areaHeight / 2);
           });
         },
         child: CustomPaint(
           size: Size(areaWidth, areaHeight),
-          painter: RayPainter(userX, userY, drawData),
+          painter: RayPainter(userX, userY, drawData, areaWidth, areaHeight),
         ),
       )),
     );
@@ -56,6 +59,8 @@ class _CanvasWidgetState extends State<CanvasWidget> {
 class RayPainter extends CustomPainter {
   double userX;
   double userY;
+  double areaWidth;
+  double areaHeight;
   DrawData drawData;
   final Paint wallPaint = Paint()
     ..strokeWidth = 2
@@ -68,7 +73,7 @@ class RayPainter extends CustomPainter {
     ..style = PaintingStyle.stroke
     ..color = Colors.redAccent;
 
-  RayPainter(this.userX, this.userY, this.drawData);
+  RayPainter(this.userX, this.userY, this.drawData, this.areaWidth, this.areaHeight);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -81,19 +86,50 @@ class RayPainter extends CustomPainter {
     });
 
     if (drawData.particle != null) {
+      //rays 2D---------------------------------------------------------------------------------------------------------
       drawData.particle.intersect(drawData.walls).forEach((rAndI) {
         Offset startPoint = Offset(rAndI.ray.pos.x, rAndI.ray.pos.y);
         Offset endPoint;
         if (rAndI.intersectPoint == null) {
           endPoint = Offset(rAndI.ray.dir.x, rAndI.ray.dir.y);
+//          endPoint = startPoint;
         } else {
           endPoint = Offset(rAndI.intersectPoint.x, rAndI.intersectPoint.y);
         }
         canvas.drawLine(startPoint, endPoint, rayPaint);
       });
-    }
 
-    canvas.drawCircle(Offset(userX, userY), 20, pointerPaint);
+      canvas.drawCircle(Offset(userX, userY), 20, pointerPaint);
+
+      //walls 3D--------------------------------------------------------------------------------------------------------
+      List<double> scene = drawData.particle.intersect(drawData.walls).map((rAndI) {
+        return rAndI.intersectPoint?.distanceTo(math.Vector2(userX, userY)) ?? -1;
+      }).toList();
+
+      double sceneH = areaHeight / 2;
+      double sceneW = areaWidth;
+      for (int i = 0; i < scene.length; i++) {
+        double h = map(scene[i], 0, sceneW, sceneH, 0);
+        if (scene[i] == -1) h = 0; // no intersection with wall - need to set 0
+
+        Rect r = Rect.fromCenter(
+            center: Offset(sceneW / scene.length * i, sceneH * 1.5),
+            width: sceneW / scene.length,
+            height: h);
+
+        int col = 255 - map(scene[i].toInt(), 0, sceneW, 0, 255).toInt();
+        canvas.drawRect(
+            r,
+            Paint()
+              ..strokeWidth = 4
+              ..style = PaintingStyle.fill
+              ..color = Color.fromARGB(255, col, col, col));
+      }
+    }
+  }
+
+  double map(n, start1, stop1, start2, stop2) {
+    return (n - start1) / (stop1 - start1) * (stop2 - start2) + start2;
   }
 
   @override

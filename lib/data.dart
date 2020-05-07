@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:vector_math/vector_math.dart';
 
 const int WALLS_COUNT = 4;
-const double RAY_ANGLE_DELTA = 2;
+const double RAY_ANGLE_DELTA = 0.1;
 
 class DrawData {
   DrawData._internal();
@@ -29,7 +29,7 @@ class Particle {
   List<Ray> rays = [];
 
   Particle(this.pos) {
-    for (double i = 0; i < 360; i += RAY_ANGLE_DELTA) {
+    for (double i = 0; i < 40; i += RAY_ANGLE_DELTA) {
       rays.add(Ray(Vector2(pos.x, pos.y), i));
     }
   }
